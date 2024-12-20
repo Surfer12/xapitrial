@@ -1,0 +1,14 @@
+{
+    "name": "ai-code-improvement-tutorial",
+    "version": "1.0.0",
+    "description": "A beginner-friendly tutorial on using AI to improve code",
+    "main": "improve_calculator.js",
+    "scripts": {
+        "start": "node improve_calculator.js",
+        "test": "mocha test/**/*.test.js"
+    },
+    "dependencies": {
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0"
+    }
+}
