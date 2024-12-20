@@ -11,33 +11,27 @@
 
 import javascript
 import semmle.javascript.frameworks.jQuery
-import semmle.javascript.frameworks.NodeJS
-import semmle.javascript.JSDoc
 
-from DataFlow::CallNode call
-where
-  // jQuery deprecated methods
-  exists(JQuery::MethodCall m |
-    m = call and
-    m.getMethodName() in [
-      "andSelf", "browser", "live", "die", "load", "unload", "size",
-      "error", "success", "complete", "bind", "unbind", "delegate", "undelegate"
-    ]
+query predicate problems(DataFlow::CallNode call, string message) {
+  exists(string reason |
+    (
+      // jQuery deprecated methods
+      exists(JQuery::MethodCall m |
+        m = call and
+        m.getMethodName() in [
+          "andSelf", "browser", "live", "die", "load", "unload", "size",
+          "error", "success", "complete", "bind", "unbind", "delegate", "undelegate"
+        ] and
+        reason = "jQuery method"
+      )
+      or
+      // Functions with 'deprecated' in their name
+      exists(string name |
+        name = call.getCalleeName() and
+        name.matches("%deprecated%") and
+        reason = "function"
+      )
+    ) and
+    message = "Usage of deprecated " + reason + ": " + call.getCalleeName()
   )
-  or
-  // Node.js deprecated APIs
-  exists(NodeModule mod |
-    call = mod.getAMemberCall(_) and
-    exists(JSDoc::Comment comment |
-      comment = call.getACallee().getDocumentation() and
-      comment.getATag().getTitle() = "deprecated"
-    )
-  )
-  or
-  // General deprecated function calls marked with JSDoc
-  exists(JSDoc::Comment comment |
-    comment = call.getACallee().getDocumentation() and
-    comment.getATag().getTitle() = "deprecated"
-  )
-select call,
-  "Usage of deprecated API: " + call.getCalleeName()
+}

@@ -12,37 +12,49 @@
 
 import javascript
 import DataFlow::PathGraph
-import semmle.javascript.security.dataflow.TaintedPath::Configuration
-import semmle.javascript.security.dataflow.DomBasedXss::Configuration
 
-class DangerousFlowConfig extends TaintTracking::Configuration {
+class DangerousFlowConfig extends DataFlow::Configuration {
   DangerousFlowConfig() { this = "DangerousFlowConfig" }
 
   override predicate isSource(DataFlow::Node source) {
-    // Sources include URL parameters, DOM inputs, and file system reads
-    source instanceof RemoteFlowSource or
-    source instanceof DOM::LocationSource or
-    source instanceof FileSystemAccess::FileNameSource
+    exists(DataFlow::Node node |
+      // Sources: URL parameters, DOM inputs
+      node = source and
+      (
+        node.(DataFlow::ParameterNode).getName().matches("%url%") or
+        node.(DataFlow::PropRead).getPropertyName().matches("%location%") or
+        node.(DataFlow::PropRead).getPropertyName().matches("%href%")
+      )
+    )
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    // Sinks include HTML injection points and command execution
-    sink instanceof DOM::Sink or
-    sink instanceof CommandExecution::Sink
-  }
-
-  override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
-    // Add custom taint steps if needed
-    exists(DataFlow::PropRead read |
-      read = succ and
-      pred = read.getBase() and
-      read.getPropertyName() = "data"
+    exists(DataFlow::Node node |
+      // Sinks: innerHTML, eval, etc.
+      node = sink and
+      (
+        exists(DataFlow::PropWrite pw |
+          pw = node and
+          pw.getPropertyName() = "innerHTML"
+        )
+        or
+        exists(DataFlow::CallNode call |
+          call = node and
+          call.getCalleeName() = "eval"
+        )
+      )
     )
   }
 }
 
-from DangerousFlowConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
-where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,
-  "Potentially unsafe data flow from " + source.getNode().toString() +
-  " to " + sink.getNode().toString()
+query predicate problems(
+  DataFlow::PathNode source, DataFlow::PathNode sink,
+  string message
+) {
+  exists(DangerousFlowConfig cfg |
+    cfg.hasFlowPath(source, sink) and
+    message =
+      "Potentially unsafe data flow from " + source.toString() + " to " +
+      sink.toString()
+  )
+}
