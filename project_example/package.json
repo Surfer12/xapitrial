@@ -1,0 +1,14 @@
+{
+    "name": "ai-assisted-project",
+    "version": "1.0.0",
+    "description": "Example project demonstrating AI-assisted code improvement",
+    "main": "improve_code.js",
+    "scripts": {
+        "improve": "node improve_code.js",
+        "test": "mocha test/**/*.test.js"
+    },
+    "dependencies": {
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0"
+    }
+}
