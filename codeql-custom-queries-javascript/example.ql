@@ -11,3 +11,5 @@ import javascript
 from Function f
 where f.getFile().getExtension() = "js"
 select f, "Found function: " + f.getName()
+
+

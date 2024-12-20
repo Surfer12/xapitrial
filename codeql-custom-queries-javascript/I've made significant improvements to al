@@ -1,0 +1,25 @@
+I've made significant improvements to all queries, but there are still some linter errors to fix. Let me explain the changes and remaining issues:
+memory-leaks.ql - Fixed ✅
+Changed to use DataFlow types
+Added proper method value accessors
+Now correctly tracks event listener pairs
+unsafe-regex.ql - Fixed ✅
+Improved detection of nested quantifiers
+Better handling of character class overlaps
+More precise pattern matching
+data-flow.ql - Partially Fixed 🔄
+Added more comprehensive sources and sinks
+Improved taint tracking configuration
+Still needs correct module imports for:
+TaintedPath
+DomBasedXss
+DOM and CommandExecution types
+deprecated-apis.ql - Partially Fixed 🔄
+Added specific jQuery deprecated method list
+Improved JSDoc handling
+Still needs correct module imports for:
+NodeJS framework
+JSDoc types
+Would you like me to continue fixing the remaining issues in the data flow and deprecated APIs queries? We'll need to use the correct module paths and types from the CodeQL standard library.
+
+

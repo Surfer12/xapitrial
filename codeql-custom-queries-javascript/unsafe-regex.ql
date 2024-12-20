@@ -13,8 +13,7 @@
 import javascript
 import semmle.javascript.RegExp
 
-from RegExpTerm term
-where
+query predicate problems(RegExpTerm term, string message) {
   // Find nested quantifiers that could cause catastrophic backtracking
   term.isNested() and
   term.isGreedy() and
@@ -37,6 +36,6 @@ where
         cc2.getAMatchedString() = char
       )
     )
-  )
-select term,
-  "This regular expression may be vulnerable to catastrophic backtracking: " + term.toString()
+  ) and
+  message = "This regular expression may be vulnerable to catastrophic backtracking: " + term.toString()
+}
